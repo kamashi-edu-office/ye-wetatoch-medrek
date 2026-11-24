@@ -68,22 +68,30 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .record-btn.recording {
             background: #dc3545;
             animation: pulse 1.2s infinite;
+        }
+        .fallback-label {
+            display: block;
+            text-align: center;
+            background: #333;
+            color: #ddd;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            border: 1px dashed #666;
         }
         @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.6; }
             100% { opacity: 1; }
         }
-        audio {
-            width: 100%;
-            margin-top: 8px;
-            height: 36px;
-        }
+        audio { width: 100%; margin-top: 8px; height: 36px; }
         .card {
             background: #2a2a2a;
             padding: 12px;
@@ -111,7 +119,11 @@
         <h3>🎙️ የድምፅ ምስጢር እና እንቆቅልሽ</h3>
         <p style="font-size: 13px; color: #ccc;">በድምፅ ወይም በጽሁፍ አስቂኝ እንቆቅልሽ ይጠይቁ!</p>
         
-        <button id="rec-btn-mystery" class="record-btn" onclick="toggleRecord('mystery')">🎙️ ድምፅ መቅዳት ጀምር</button>
+        <button id="rec-btn-mystery" class="record-btn" onclick="toggleRecord('mystery')">🎙️ ቀጥታ ድምፅ መቅዳት ጀምር</button>
+        <label class="fallback-label">
+            📂 ወይም በስልክ መቅጃ ቅዳ / ድምፅ ምረጥ
+            <input type="file" accept="audio/*" capture="microphone" style="display:none;" onchange="handleFileAudio(event, 'mystery')">
+        </label>
         <div id="preview-mystery"></div>
 
         <textarea id="mystery-text" rows="2" placeholder="ተጨማሪ ጽሁፍ ካለዎት እዚህ ይጻፉ..."></textarea>
@@ -136,7 +148,11 @@
         <h3>⏳ የወደፊት የጊዜ ካፕሱል</h3>
         <p style="font-size: 13px; color: #ccc;">ለወደፊት እራስዎ የድምፅ ወይም የጽሁፍ መልዕክት ይቆልፉ።</p>
         
-        <button id="rec-btn-capsule" class="record-btn" onclick="toggleRecord('capsule')">🎙️ የድምፅ መልዕክት ቅዳ</button>
+        <button id="rec-btn-capsule" class="record-btn" onclick="toggleRecord('capsule')">🎙️ ቀጥታ ድምፅ መቅዳት ጀምር</button>
+        <label class="fallback-label">
+            📂 ወይም በስልክ መቅጃ ቅዳ / ድምፅ ምረጥ
+            <input type="file" accept="audio/*" capture="microphone" style="display:none;" onchange="handleFileAudio(event, 'capsule')">
+        </label>
         <div id="preview-capsule"></div>
 
         <textarea id="capsule-msg" rows="2" placeholder="ለወደፊት እራስዎ የሚያስተላልፉት ጽሁፍ..."></textarea>
@@ -162,15 +178,20 @@
             btn.classList.add('active');
         }
 
-        // የድምፅ መቅጃ (Voice Recorder Logic)
         let mediaRecorder;
         let audioChunks = [];
         let isRecording = false;
         let recordedUrls = { mystery: null, capsule: null };
 
+        // ቀጥታ በብራውዘር መቅጃ
         async function toggleRecord(section) {
             const btn = document.getElementById('rec-btn-' + section);
             const preview = document.getElementById('preview-' + section);
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                alert("ቴሌግራም ቀጥታ ማይክሮፎን አልፈቀደም። እባክዎ ከስር ያለውን 'በስልክ መቅጃ ቅዳ' የሚለውን ይጠቀሙ!");
+                return;
+            }
 
             if (!isRecording) {
                 try {
@@ -195,7 +216,7 @@
                     btn.innerText = "⏹️ መቅዳት አቁም (Stop)";
                     btn.classList.add("recording");
                 } catch (err) {
-                    alert("የስልክዎ ማይክሮፎን አልተፈቀደም! እባክዎ የማይክሮፎን ፈቃድ (Allow Microphone) ይስጡ።");
+                    alert("ቀጥታ ማይክሮፎን አልተፈቀደም (" + err.name + ")። ከስር ያለውን 'በስልክ መቅጃ ቅዳ' የሚለውን ይጠቀሙ!");
                 }
             } else {
                 mediaRecorder.stop();
@@ -205,7 +226,17 @@
             }
         }
 
-        // 1. ምስጢር መልቀቂያ (ከድምፅ ጋር)
+        // በስልኩ መቅጃ (Fallback) ሲቀዳ
+        function handleFileAudio(event, section) {
+            const file = event.target.files[0];
+            if (file) {
+                const audioUrl = URL.createObjectURL(file);
+                recordedUrls[section] = audioUrl;
+                document.getElementById('preview-' + section).innerHTML = 
+                    `<p style="font-size:12px; color:#4caf50; margin:5px 0;">✅ የተዘጋጀ ድምፅ (ያዳምጡት)፦</p><audio controls src="${audioUrl}"></audio>`;
+            }
+        }
+
         function postMystery() {
             const text = document.getElementById('mystery-text').value;
             const audioUrl = recordedUrls.mystery;
@@ -222,31 +253,4 @@
             recordedUrls.mystery = null;
         }
 
-        // 2. ክህሎት መለዋወጫ
         function postBarter() {
-            const offer = document.getElementById('offer-skill').value;
-            const want = document.getElementById('want-skill').value;
-            if (!offer || !want) return alert("እባክዎ ሁለቱንም ሳጥኖች ይሙሉ!");
-            const list = document.getElementById('barter-list');
-            list.innerHTML = `<div class="card"><strong>የክህሎት ጥያቄ፡</strong><br>✅ እሰጣለሁ: ${offer}<br>🎯 እፈልጋለሁ: ${want}</div>` + list.innerHTML;
-            document.getElementById('offer-skill').value = '';
-            document.getElementById('want-skill').value = '';
-        }
-
-        // 3. ጊዜ ካፕሱል መቆለፊያ (ከድምፅ ጋር)
-        function saveCapsule() {
-            const msg = document.getElementById('capsule-msg').value;
-            const date = document.getElementById('capsule-date').value;
-            const audioUrl = recordedUrls.capsule;
-            if ((!msg && !audioUrl) || !date) return alert("እባክዎ ድምፅ/መልዕክት እና ቀን ይምረጡ!");
-
-            const list = document.getElementById('capsule-list');
-            list.innerHTML = `<div class="card">🔒 <strong>የተቆለፈ የድምፅ/ጽሁፍ ካፕሱል</strong><br>የሚከፈትበት ቀን: ${date}<br><small>መልዕክቱ እስከ ቀኑ ድረስ ተደብቋል</small></div>` + list.innerHTML;
-            
-            document.getElementById('capsule-msg').value = '';
-            document.getElementById('preview-capsule').innerHTML = '';
-            recordedUrls.capsule = null;
-        }
-    </script>
-</body>
-</html>
