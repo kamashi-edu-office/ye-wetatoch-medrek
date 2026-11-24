@@ -1,1 +1,178 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>የወጣቶች የፈጠራ መድረክ</title>
+    <script src="https://telegram.org"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--tg-theme-bg-color, #121212);
+            color: var(--tg-theme-text-color, #ffffff);
+            margin: 0;
+            padding: 15px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .tabs {
+            display: flex;
+            justify-content: space-between;
+            background: #222;
+            border-radius: 10px;
+            padding: 5px;
+            margin-bottom: 20px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px 5px;
+            border: none;
+            background: transparent;
+            color: #aaa;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .tab-btn.active {
+            background: #0088cc;
+            color: #fff;
+        }
+        .section {
+            display: none;
+            background: #1e1e1e;
+            padding: 15px;
+            border-radius: 12px;
+        }
+        .section.active {
+            display: block;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px 0;
+            border-radius: 8px;
+            border: 1px solid #333;
+            background: #2c2c2c;
+            color: #fff;
+            box-sizing: border-box;
+        }
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            background: #0088cc;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .card {
+            background: #2a2a2a;
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border-left: 4px solid #0088cc;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h2>🚀 የወጣቶች የፈጠራ መድረክ</h2>
+        <p id="user-greeting" style="font-size: 14px; color: #aaa;">እንኳን በደህና መጡ!</p>
+    </div>
+
+    <!-- ዋና ዋና ክፍሎች (Tabs) -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="openTab('mystery', this)">🎙️ 1. ምስጢር</button>
+        <button class="tab-btn" onclick="openTab('barter', this)">🤝 2. ክህሎት</button>
+        <button class="tab-btn" onclick="openTab('capsule', this)">⏳ 3. ካፕሱል</button>
+    </div>
+
+    <!-- ክፍል 1: የድምፅ ምስጢር እና ጨዋታ -->
+    <div id="mystery" class="section active">
+        <h3>🎙️ የድምፅ ምስጢር እና እንቆቅልሽ</h3>
+        <p style="font-size: 13px; color: #ccc;">አስቂኝ ወይም አስገራሚ እንቆቅልሽ ይጠይቁ፣ ሌሎች ይገምቱ!</p>
+        <textarea id="mystery-text" rows="3" placeholder="እንቆቅልሽዎን ወይም የታሪክ መጀመሪያዎን እዚህ ይጻፉ..."></textarea>
+        <button class="action-btn" onclick="postMystery()">ልቀቅ (Post)</button>
+        <div id="mystery-list"></div>
+    </div>
+
+    <!-- ክፍል 2: የክህሎት ልውውጥ -->
+    <div id="barter" class="section">
+        <h3>🤝 የክህሎት ልውውጥ (Skill Barter)</h3>
+        <p style="font-size: 13px; color: #ccc;">ያለ ገንዘብ እውቀት ይለዋወጡ።</p>
+        <label>እኔ ማስተማር የምችለው ክህሎት፡</label>
+        <input type="text" id="offer-skill" placeholder="ለምሳሌ፡ ፎቶ ኤዲቲንግ፣ እንግሊዝኛ...">
+        <label>መማር የምፈልገው ክህሎት፡</label>
+        <input type="text" id="want-skill" placeholder="ለምሳሌ፡ ኮዲንግ፣ ግራፊክ ዲዛይን...">
+        <button class="action-btn" onclick="postBarter()">አጋር ፈልግ</button>
+        <div id="barter-list"></div>
+    </div>
+
+    <!-- ክፍል 3: የትውልድ የጊዜ ካፕሱል -->
+    <div id="capsule" class="section">
+        <h3>⏳ የወደፊት የጊዜ ካፕሱል</h3>
+        <p style="font-size: 13px; color: #ccc;">ለወደፊት እራስዎ መልዕክት አስቀምጠው ይቆልፉ።</p>
+        <textarea id="capsule-msg" rows="3" placeholder="ለወደፊት እራስዎ የሚያስተላልፉት መልዕክት..."></textarea>
+        <label>መልዕክቱ የሚከፈትበት ቀን፡</label>
+        <input type="date" id="capsule-date">
+        <button class="action-btn" onclick="saveCapsule()">ካፕሱሉን ቆልፍ 🔒</button>
+        <div id="capsule-list"></div>
+    </div>
+
+    <script>
+        // የቴሌግራም WebApp ማስጀመሪያ
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            document.getElementById('user-greeting').innerText = 
+                "ሰላም " + tg.initDataUnsafe.user.first_name + "! የፈጠራ ጉዞህን ጀምር።";
+        }
+
+        // ገጾችን መቀያየሪያ (Tab Switcher)
+        function openTab(tabId, btn) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        // 1. ምስጢር መልቀቂያ
+        function postMystery() {
+            const text = document.getElementById('mystery-text').value;
+            if (!text) return alert("እባክዎ መጀመሪያ ጽሁፍ ያስገቡ!");
+            const list = document.getElementById('mystery-list');
+            list.innerHTML = `<div class="card"><strong>አዲስ ምስጢር፡</strong><p>${text}</p></div>` + list.innerHTML;
+            document.getElementById('mystery-text').value = '';
+        }
+
+        // 2. ክህሎት መለዋወጫ
+        function postBarter() {
+            const offer = document.getElementById('offer-skill').value;
+            const want = document.getElementById('want-skill').value;
+            if (!offer || !want) return alert("እባክዎ ሁለቱንም ሳጥኖች ይሙሉ!");
+            const list = document.getElementById('barter-list');
+            list.innerHTML = `<div class="card"><strong>የክህሎት ጥያቄ፡</strong><br>✅ እሰጣለሁ: ${offer}<br>🎯 እፈልጋለሁ: ${want}</div>` + list.innerHTML;
+            document.getElementById('offer-skill').value = '';
+            document.getElementById('want-skill').value = '';
+        }
+
+        // 3. ጊዜ ካፕሱል መቆለፊያ
+        function saveCapsule() {
+            const msg = document.getElementById('capsule-msg').value;
+            const date = document.getElementById('capsule-date').value;
+            if (!msg || !date) return alert("እባክዎ መልዕክት እና ቀን ይምረጡ!");
+            const list = document.getElementById('capsule-list');
+            list.innerHTML = `<div class="card">🔒 <strong>የተቆለፈ ካፕሱል</strong><br>የሚከፈትበት ቀን: ${date}<br><small>መልዕክቱ እስከ ቀኑ ድረስ ተደብቋል</small></div>` + list.innerHTML;
+            document.getElementById('capsule-msg').value = '';
+        }
+    </script>
+</body>
+</html>
 
