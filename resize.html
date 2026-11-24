@@ -1,1 +1,26 @@
 
+<!DOCTYPE html>
+<html>
+<body style="background:#111; color:#fff; text-align:center; padding:20px; font-family:sans-serif;">
+    <h3>የቴሌግራም ፎቶ ማስተካከያ (640x360)</h3>
+    <input type="file" id="upload" accept="image/*" style="margin:20px 0;"><br>
+    <canvas id="canvas" width="640" height="360" style="border:1px solid #555; max-width:100%;"></canvas><br><br>
+    <a id="download" style="display:none; background:#0088cc; color:#fff; padding:12px 20px; text-decoration:none; border-radius:8px; font-weight:bold;">የተስተካከለውን ፎቶ አውርድ (Download)</a>
+
+    <script>
+        document.getElementById('upload').onchange = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, 640, 360);
+                const link = document.getElementById('download');
+                link.href = canvas.toDataURL('image/jpeg', 0.95);
+                link.download = 'telegram_banner_640x360.jpg';
+                link.style.display = 'inline-block';
+            };
+            img.src = URL.createObjectURL(e.target.files[0]);
+        };
+    </script>
+</body>
+</html>
