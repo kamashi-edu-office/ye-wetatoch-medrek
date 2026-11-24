@@ -13,10 +13,7 @@
             margin: 0;
             padding: 15px;
         }
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        .header { text-align: center; margin-bottom: 20px; }
         .tabs {
             display: flex;
             justify-content: space-between;
@@ -36,20 +33,10 @@
             cursor: pointer;
             font-size: 13px;
         }
-        .tab-btn.active {
-            background: #0088cc;
-            color: #fff;
-        }
-        .section {
-            display: none;
-            background: #1e1e1e;
-            padding: 15px;
-            border-radius: 12px;
-        }
-        .section.active {
-            display: block;
-        }
-        input, textarea, select {
+        .tab-btn.active { background: #0088cc; color: #fff; }
+        .section { display: none; background: #1e1e1e; padding: 15px; border-radius: 12px; }
+        .section.active { display: block; }
+        input, textarea {
             width: 100%;
             padding: 10px;
             margin: 8px 0 15px 0;
@@ -69,6 +56,33 @@
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
+            margin-top: 8px;
+        }
+        .record-btn {
+            width: 100%;
+            padding: 12px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .record-btn.recording {
+            background: #dc3545;
+            animation: pulse 1.2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+        audio {
+            width: 100%;
+            margin-top: 8px;
+            height: 36px;
         }
         .card {
             background: #2a2a2a;
@@ -86,7 +100,6 @@
         <p id="user-greeting" style="font-size: 14px; color: #aaa;">እንኳን በደህና መጡ!</p>
     </div>
 
-    <!-- ዋና ዋና ክፍሎች (Tabs) -->
     <div class="tabs">
         <button class="tab-btn active" onclick="openTab('mystery', this)">🎙️ 1. ምስጢር</button>
         <button class="tab-btn" onclick="openTab('barter', this)">🤝 2. ክህሎት</button>
@@ -96,8 +109,12 @@
     <!-- ክፍል 1: የድምፅ ምስጢር እና ጨዋታ -->
     <div id="mystery" class="section active">
         <h3>🎙️ የድምፅ ምስጢር እና እንቆቅልሽ</h3>
-        <p style="font-size: 13px; color: #ccc;">አስቂኝ ወይም አስገራሚ እንቆቅልሽ ይጠይቁ፣ ሌሎች ይገምቱ!</p>
-        <textarea id="mystery-text" rows="3" placeholder="እንቆቅልሽዎን ወይም የታሪክ መጀመሪያዎን እዚህ ይጻፉ..."></textarea>
+        <p style="font-size: 13px; color: #ccc;">በድምፅ ወይም በጽሁፍ አስቂኝ እንቆቅልሽ ይጠይቁ!</p>
+        
+        <button id="rec-btn-mystery" class="record-btn" onclick="toggleRecord('mystery')">🎙️ ድምፅ መቅዳት ጀምር</button>
+        <div id="preview-mystery"></div>
+
+        <textarea id="mystery-text" rows="2" placeholder="ተጨማሪ ጽሁፍ ካለዎት እዚህ ይጻፉ..."></textarea>
         <button class="action-btn" onclick="postMystery()">ልቀቅ (Post)</button>
         <div id="mystery-list"></div>
     </div>
@@ -117,8 +134,12 @@
     <!-- ክፍል 3: የትውልድ የጊዜ ካፕሱል -->
     <div id="capsule" class="section">
         <h3>⏳ የወደፊት የጊዜ ካፕሱል</h3>
-        <p style="font-size: 13px; color: #ccc;">ለወደፊት እራስዎ መልዕክት አስቀምጠው ይቆልፉ።</p>
-        <textarea id="capsule-msg" rows="3" placeholder="ለወደፊት እራስዎ የሚያስተላልፉት መልዕክት..."></textarea>
+        <p style="font-size: 13px; color: #ccc;">ለወደፊት እራስዎ የድምፅ ወይም የጽሁፍ መልዕክት ይቆልፉ።</p>
+        
+        <button id="rec-btn-capsule" class="record-btn" onclick="toggleRecord('capsule')">🎙️ የድምፅ መልዕክት ቅዳ</button>
+        <div id="preview-capsule"></div>
+
+        <textarea id="capsule-msg" rows="2" placeholder="ለወደፊት እራስዎ የሚያስተላልፉት ጽሁፍ..."></textarea>
         <label>መልዕክቱ የሚከፈትበት ቀን፡</label>
         <input type="date" id="capsule-date">
         <button class="action-btn" onclick="saveCapsule()">ካፕሱሉን ቆልፍ 🔒</button>
@@ -126,7 +147,6 @@
     </div>
 
     <script>
-        // የቴሌግራም WebApp ማስጀመሪያ
         const tg = window.Telegram.WebApp;
         tg.expand();
 
@@ -135,7 +155,6 @@
                 "ሰላም " + tg.initDataUnsafe.user.first_name + "! የፈጠራ ጉዞህን ጀምር።";
         }
 
-        // ገጾችን መቀያየሪያ (Tab Switcher)
         function openTab(tabId, btn) {
             document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -143,13 +162,64 @@
             btn.classList.add('active');
         }
 
-        // 1. ምስጢር መልቀቂያ
+        // የድምፅ መቅጃ (Voice Recorder Logic)
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+        let recordedUrls = { mystery: null, capsule: null };
+
+        async function toggleRecord(section) {
+            const btn = document.getElementById('rec-btn-' + section);
+            const preview = document.getElementById('preview-' + section);
+
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+
+                    mediaRecorder.ondataavailable = event => {
+                        if (event.data.size > 0) audioChunks.push(event.data);
+                    };
+
+                    mediaRecorder.onstop = () => {
+                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        recordedUrls[section] = audioUrl;
+                        preview.innerHTML = `<p style="font-size:12px; color:#4caf50; margin:5px 0;">✅ የተቀዳው ድምፅ (ያዳምጡት)፦</p><audio controls src="${audioUrl}"></audio>`;
+                        stream.getTracks().forEach(track => track.stop());
+                    };
+
+                    mediaRecorder.start();
+                    isRecording = true;
+                    btn.innerText = "⏹️ መቅዳት አቁም (Stop)";
+                    btn.classList.add("recording");
+                } catch (err) {
+                    alert("የስልክዎ ማይክሮፎን አልተፈቀደም! እባክዎ የማይክሮፎን ፈቃድ (Allow Microphone) ይስጡ።");
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                btn.innerText = "🎙️ እንደገና ድምፅ ቅዳ";
+                btn.classList.remove("recording");
+            }
+        }
+
+        // 1. ምስጢር መልቀቂያ (ከድምፅ ጋር)
         function postMystery() {
             const text = document.getElementById('mystery-text').value;
-            if (!text) return alert("እባክዎ መጀመሪያ ጽሁፍ ያስገቡ!");
+            const audioUrl = recordedUrls.mystery;
+            if (!text && !audioUrl) return alert("እባክዎ መጀመሪያ ድምፅ ይቅዱ ወይም ጽሁፍ ይጻፉ!");
+
+            let audioHtml = audioUrl ? `<audio controls src="${audioUrl}"></audio>` : '';
+            let textHtml = text ? `<p>${text}</p>` : '';
+
             const list = document.getElementById('mystery-list');
-            list.innerHTML = `<div class="card"><strong>አዲስ ምስጢር፡</strong><p>${text}</p></div>` + list.innerHTML;
+            list.innerHTML = `<div class="card"><strong>🎙️ አዲስ የድምፅ ምስጢር፡</strong>${audioHtml}${textHtml}</div>` + list.innerHTML;
+            
             document.getElementById('mystery-text').value = '';
+            document.getElementById('preview-mystery').innerHTML = '';
+            recordedUrls.mystery = null;
         }
 
         // 2. ክህሎት መለዋወጫ
@@ -163,16 +233,20 @@
             document.getElementById('want-skill').value = '';
         }
 
-        // 3. ጊዜ ካፕሱል መቆለፊያ
+        // 3. ጊዜ ካፕሱል መቆለፊያ (ከድምፅ ጋር)
         function saveCapsule() {
             const msg = document.getElementById('capsule-msg').value;
             const date = document.getElementById('capsule-date').value;
-            if (!msg || !date) return alert("እባክዎ መልዕክት እና ቀን ይምረጡ!");
+            const audioUrl = recordedUrls.capsule;
+            if ((!msg && !audioUrl) || !date) return alert("እባክዎ ድምፅ/መልዕክት እና ቀን ይምረጡ!");
+
             const list = document.getElementById('capsule-list');
-            list.innerHTML = `<div class="card">🔒 <strong>የተቆለፈ ካፕሱል</strong><br>የሚከፈትበት ቀን: ${date}<br><small>መልዕክቱ እስከ ቀኑ ድረስ ተደብቋል</small></div>` + list.innerHTML;
+            list.innerHTML = `<div class="card">🔒 <strong>የተቆለፈ የድምፅ/ጽሁፍ ካፕሱል</strong><br>የሚከፈትበት ቀን: ${date}<br><small>መልዕክቱ እስከ ቀኑ ድረስ ተደብቋል</small></div>` + list.innerHTML;
+            
             document.getElementById('capsule-msg').value = '';
+            document.getElementById('preview-capsule').innerHTML = '';
+            recordedUrls.capsule = null;
         }
     </script>
 </body>
 </html>
-
