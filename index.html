@@ -13,14 +13,14 @@
             margin: 0;
             padding: 15px;
         }
-        .header { text-align: center; margin-bottom: 20px; }
+        .header { text-align: center; margin-bottom: 18px; }
         .tabs {
             display: flex;
             justify-content: space-between;
             background: #222;
             border-radius: 10px;
             padding: 5px;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
         }
         .tab-btn {
             flex: 1;
@@ -38,29 +38,30 @@
         .section.active { display: block; }
         input, textarea {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             margin: 8px 0 15px 0;
             border-radius: 8px;
             border: 1px solid #333;
             background: #2c2c2c;
             color: #fff;
             box-sizing: border-box;
+            font-size: 14px;
         }
         .action-btn {
             width: 100%;
-            padding: 12px;
+            padding: 13px;
             background: #0088cc;
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 16px;
+            font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            margin-top: 8px;
+            margin-top: 5px;
         }
-        .record-btn {
+        .voice-btn {
             width: 100%;
-            padding: 12px;
+            padding: 13px;
             background: #28a745;
             color: white;
             border: none;
@@ -68,36 +69,31 @@
             font-size: 15px;
             font-weight: bold;
             cursor: pointer;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
-        .record-btn.recording {
-            background: #dc3545;
-            animation: pulse 1.2s infinite;
-        }
-        .fallback-label {
+        .feed-btn {
             display: block;
             text-align: center;
+            width: 100%;
+            padding: 13px;
             background: #333;
-            color: #ddd;
+            color: #4da6ff;
+            border: 1px solid #4da6ff;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            text-decoration: none;
+            margin-top: 20px;
+            box-sizing: border-box;
+        }
+        .status-box {
+            background: #1b3a26;
+            color: #75e096;
             padding: 10px;
             border-radius: 8px;
+            margin-top: 12px;
             font-size: 13px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            border: 1px dashed #666;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
-        audio { width: 100%; margin-top: 8px; height: 36px; }
-        .card {
-            background: #2a2a2a;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 15px;
-            border-left: 4px solid #0088cc;
+            display: none;
         }
     </style>
 </head>
@@ -105,7 +101,7 @@
 
     <div class="header">
         <h2>🚀 የወጣቶች የፈጠራ መድረክ</h2>
-        <p id="user-greeting" style="font-size: 14px; color: #aaa;">እንኳን በደህና መጡ!</p>
+        <p id="user-greeting" style="font-size: 13px; color: #aaa;">እንኳን በደህና መጡ!</p>
     </div>
 
     <div class="tabs">
@@ -114,61 +110,62 @@
         <button class="tab-btn" onclick="openTab('capsule', this)">⏳ 3. ካፕሱል</button>
     </div>
 
-    <!-- ክፍል 1: የድምፅ ምስጢር እና ጨዋታ -->
+    <!-- ክፍል 1: የድምፅ ምስጢር እና ቪዲዮ -->
     <div id="mystery" class="section active">
-        <h3>🎙️ የድምፅ ምስጢር እና እንቆቅልሽ</h3>
-        <p style="font-size: 13px; color: #ccc;">በድምፅ ወይም በጽሁፍ አስቂኝ እንቆቅልሽ ይጠይቁ!</p>
+        <h3>🎙️ የድምፅ ምስጢር እና ቪዲዮ</h3>
+        <p style="font-size: 13px; color: #ccc;">ድምፅ ወይም ቪዲዮ ለመቅዳት አረንጓዴውን ቁልፍ ይጫኑ፤ ወይም እንቆቅልሽዎን በጽሁፍ ይልቀቁ።</p>
         
-        <button id="rec-btn-mystery" class="record-btn" onclick="toggleRecord('mystery')">🎙️ ቀጥታ ድምፅ መቅዳት ጀምር</button>
-        <label class="fallback-label">
-            📂 ወይም በስልክ መቅጃ ቅዳ / ድምፅ ምረጥ
-            <input type="file" accept="audio/*" capture="microphone" style="display:none;" onchange="handleFileAudio(event, 'mystery')">
-        </label>
-        <div id="preview-mystery"></div>
-
-        <textarea id="mystery-text" rows="2" placeholder="ተጨማሪ ጽሁፍ ካለዎት እዚህ ይጻፉ..."></textarea>
-        <button class="action-btn" onclick="postMystery()">ልቀቅ (Post)</button>
-        <div id="mystery-list"></div>
+        <button class="voice-btn" onclick="openBotForMedia()">🎙️ ድምፅ ወይም 🎥 ቪዲዮ ቅዳ (በቦቱ)</button>
+        
+        <textarea id="mystery-text" rows="3" placeholder="እንቆቅልሽዎን ወይም አዲስ ሀሳብዎን እዚህ ይጻፉ..."></textarea>
+        <button class="action-btn" onclick="sendToServer('mystery')">ለሁሉም ወጣቶች ልቀቅ 🚀</button>
+        <div id="status-mystery" class="status-box"></div>
     </div>
 
     <!-- ክፍል 2: የክህሎት ልውውጥ -->
     <div id="barter" class="section">
         <h3>🤝 የክህሎት ልውውጥ (Skill Barter)</h3>
-        <p style="font-size: 13px; color: #ccc;">ያለ ገንዘብ እውቀት ይለዋወጡ።</p>
-        <label>እኔ ማስተማር የምችለው ክህሎት፡</label>
+        <p style="font-size: 13px; color: #ccc;">ያለ ገንዘብ እውቀት ይለዋወጡ። ጥያቄዎ በቀጥታ ለሁሉም ይፖሰታል።</p>
+        <label style="font-size:13px;">እኔ ማስተማር የምችለው ክህሎት፡</label>
         <input type="text" id="offer-skill" placeholder="ለምሳሌ፡ ፎቶ ኤዲቲንግ፣ እንግሊዝኛ...">
-        <label>መማር የምፈልገው ክህሎት፡</label>
+        <label style="font-size:13px;">መማር የምፈልገው ክህሎት፡</label>
         <input type="text" id="want-skill" placeholder="ለምሳሌ፡ ኮዲንግ፣ ግራፊክ ዲዛይን...">
-        <button class="action-btn" onclick="postBarter()">አጋር ፈልግ</button>
-        <div id="barter-list"></div>
+        <button class="action-btn" onclick="sendToServer('barter')">የክህሎት ጥያቄውን ልቀቅ 🤝</button>
+        <div id="status-barter" class="status-box"></div>
     </div>
 
     <!-- ክፍል 3: የትውልድ የጊዜ ካፕሱል -->
     <div id="capsule" class="section">
         <h3>⏳ የወደፊት የጊዜ ካፕሱል</h3>
-        <p style="font-size: 13px; color: #ccc;">ለወደፊት እራስዎ የድምፅ ወይም የጽሁፍ መልዕክት ይቆልፉ።</p>
-        
-        <button id="rec-btn-capsule" class="record-btn" onclick="toggleRecord('capsule')">🎙️ ቀጥታ ድምፅ መቅዳት ጀምር</button>
-        <label class="fallback-label">
-            📂 ወይም በስልክ መቅጃ ቅዳ / ድምፅ ምረጥ
-            <input type="file" accept="audio/*" capture="microphone" style="display:none;" onchange="handleFileAudio(event, 'capsule')">
-        </label>
-        <div id="preview-capsule"></div>
-
-        <textarea id="capsule-msg" rows="2" placeholder="ለወደፊት እራስዎ የሚያስተላልፉት ጽሁፍ..."></textarea>
-        <label>መልዕክቱ የሚከፈትበት ቀን፡</label>
+        <p style="font-size: 13px; color: #ccc;">ለወደፊት እራስዎ መልዕክት አስቀምጠው በጎግል ሰርቨር ላይ ይቆልፉ።</p>
+        <textarea id="capsule-msg" rows="3" placeholder="ለወደፊት እራስዎ የሚያስተላልፉት መልዕክት..."></textarea>
+        <label style="font-size:13px;">መልዕክቱ የሚከፈትበት ቀን፡</label>
         <input type="date" id="capsule-date">
-        <button class="action-btn" onclick="saveCapsule()">ካፕሱሉን ቆልፍ 🔒</button>
-        <div id="capsule-list"></div>
+        <button class="action-btn" onclick="sendToServer('capsule')">ካፕሱሉን ቆልፍ 🔒</button>
+        <div id="status-capsule" class="status-box"></div>
     </div>
+
+    <!-- የሁሉም ወጣቶች ፖስቶች መመልከቻ ቁልፍ -->
+    <a href="https://t.me" class="feed-btn" onclick="openFeed(event)">
+        📺 የተፖሰቱ ድምፆችን እና ቪዲዮዎችን ይመልከቱ
+    </a>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
+        // የአንተ የ Google Apps Script ሰርቨር ሊንክ
+        const SCRIPT_URL = "https://google.com";
+
+        let userName = "ወጣት";
+        let userUsername = "";
+        let userId = "000000";
+
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            document.getElementById('user-greeting').innerText = 
-                "ሰላም " + tg.initDataUnsafe.user.first_name + "! የፈጠራ ጉዞህን ጀምር።";
+            userName = tg.initDataUnsafe.user.first_name || "ወጣት";
+            userUsername = tg.initDataUnsafe.user.username || "";
+            userId = tg.initDataUnsafe.user.id;
+            document.getElementById('user-greeting').innerText = "ሰላም " + userName + "! የፈጠራ ጉዞህን ጀምር።";
         }
 
         function openTab(tabId, btn) {
@@ -178,79 +175,69 @@
             btn.classList.add('active');
         }
 
-        let mediaRecorder;
-        let audioChunks = [];
-        let isRecording = false;
-        let recordedUrls = { mystery: null, capsule: null };
+        // ድምፅና ቪዲዮ በቴሌግራም ቦት ለመቅዳት ሚኒ አፑን ይዘጋል
+        function openBotForMedia() {
+            tg.showAlert("አሁን ሚኒ አፑ ሲዘጋ ከታች በቀኝ በኩል ያለውን የቴሌግራም ማይክሮፎን 🎙️ ወይም ካሜራ 🎥 ተጭነው ድምፅ/ቪዲዮ ይላኩ፤ ወዲያውኑ ይፖሰታል!", function() {
+                tg.close();
+            });
+        }
 
-        // ቀጥታ በብራውዘር መቅጃ
-        async function toggleRecord(section) {
-            const btn = document.getElementById('rec-btn-' + section);
-            const preview = document.getElementById('preview-' + section);
+        // ቻናሉን በቀጥታ በቴሌግራም ውስጥ ለመክፈት
+        function openFeed(e) {
+            e.preventDefault();
+            tg.openTelegramLink("https://t.me");
+        }
 
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                alert("ቴሌግራም ቀጥታ ማይክሮፎን አልፈቀደም። እባክዎ ከስር ያለውን 'በስልክ መቅጃ ቅዳ' የሚለውን ይጠቀሙ!");
-                return;
+        // ጽሁፎችን በቀጥታ ወደ Google Apps Script ሰርቨር መላኪያ
+        function sendToServer(type) {
+            let finalMessage = "";
+            let statusBox = document.getElementById('status-' + type);
+
+            if (type === 'mystery') {
+                const txt = document.getElementById('mystery-text').value.trim();
+                if (!txt) return alert("እባክዎ መጀመሪያ ጽሁፍ ያስገቡ!");
+                finalMessage = txt;
+                document.getElementById('mystery-text').value = '';
+            } 
+            else if (type === 'barter') {
+                const offer = document.getElementById('offer-skill').value.trim();
+                const want = document.getElementById('want-skill').value.trim();
+                if (!offer || !want) return alert("እባክዎ ሁለቱንም ሳጥኖች ይሙሉ!");
+                finalMessage = `#ክህሎት ✅ እሰጣለሁ: ${offer} | 🎯 እፈልጋለሁ: ${want}`;
+                document.getElementById('offer-skill').value = '';
+                document.getElementById('want-skill').value = '';
+            } 
+            else if (type === 'capsule') {
+                const msg = document.getElementById('capsule-msg').value.trim();
+                const dt = document.getElementById('capsule-date').value;
+                if (!msg || !dt) return alert("እባክዎ መልዕክት እና ቀን ይምረጡ!");
+                finalMessage = `#ካፕሱል [የሚከፈትበት ቀን: ${dt}] - ${msg}`;
+                document.getElementById('capsule-msg').value = '';
             }
 
-            if (!isRecording) {
-                try {
-                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                    mediaRecorder = new MediaRecorder(stream);
-                    audioChunks = [];
+            statusBox.style.display = "block";
+            statusBox.innerText = "⏳ በመላክ ላይ ነው...";
 
-                    mediaRecorder.ondataavailable = event => {
-                        if (event.data.size > 0) audioChunks.push(event.data);
-                    };
-
-                    mediaRecorder.onstop = () => {
-                        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        recordedUrls[section] = audioUrl;
-                        preview.innerHTML = `<p style="font-size:12px; color:#4caf50; margin:5px 0;">✅ የተቀዳው ድምፅ (ያዳምጡት)፦</p><audio controls src="${audioUrl}"></audio>`;
-                        stream.getTracks().forEach(track => track.stop());
-                    };
-
-                    mediaRecorder.start();
-                    isRecording = true;
-                    btn.innerText = "⏹️ መቅዳት አቁም (Stop)";
-                    btn.classList.add("recording");
-                } catch (err) {
-                    alert("ቀጥታ ማይክሮፎን አልተፈቀደም (" + err.name + ")። ከስር ያለውን 'በስልክ መቅጃ ቅዳ' የሚለውን ይጠቀሙ!");
+            // የቴሌግራም መልዕክት በሚመስል መልኩ ወደ ሰርቨሩ ይልካል
+            const payload = {
+                message: {
+                    chat: { id: userId },
+                    from: { first_name: userName, username: userUsername },
+                    text: finalMessage
                 }
-            } else {
-                mediaRecorder.stop();
-                isRecording = false;
-                btn.innerText = "🎙️ እንደገና ድምፅ ቅዳ";
-                btn.classList.remove("recording");
-            }
+            };
+
+            fetch(SCRIPT_URL, {
+                method: "POST",
+                mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                statusBox.innerText = "✅ በተሳካ ሁኔታ ተልኳል! ከታች ያለውን ሰማያዊ ቁልፍ ነክተው ቻናሉ ላይ ይመልከቱት።";
+            }).catch(err => {
+                statusBox.innerText = "❌ ስህተት ተፈጥሯል፣ እባክዎ ኢንተርኔትዎን ያረጋግጡ።";
+            });
         }
-
-        // በስልኩ መቅጃ (Fallback) ሲቀዳ
-        function handleFileAudio(event, section) {
-            const file = event.target.files[0];
-            if (file) {
-                const audioUrl = URL.createObjectURL(file);
-                recordedUrls[section] = audioUrl;
-                document.getElementById('preview-' + section).innerHTML = 
-                    `<p style="font-size:12px; color:#4caf50; margin:5px 0;">✅ የተዘጋጀ ድምፅ (ያዳምጡት)፦</p><audio controls src="${audioUrl}"></audio>`;
-            }
-        }
-
-        function postMystery() {
-            const text = document.getElementById('mystery-text').value;
-            const audioUrl = recordedUrls.mystery;
-            if (!text && !audioUrl) return alert("እባክዎ መጀመሪያ ድምፅ ይቅዱ ወይም ጽሁፍ ይጻፉ!");
-
-            let audioHtml = audioUrl ? `<audio controls src="${audioUrl}"></audio>` : '';
-            let textHtml = text ? `<p>${text}</p>` : '';
-
-            const list = document.getElementById('mystery-list');
-            list.innerHTML = `<div class="card"><strong>🎙️ አዲስ የድምፅ ምስጢር፡</strong>${audioHtml}${textHtml}</div>` + list.innerHTML;
-            
-            document.getElementById('mystery-text').value = '';
-            document.getElementById('preview-mystery').innerHTML = '';
-            recordedUrls.mystery = null;
-        }
-
-        function postBarter() {
+    </script>
+</body>
+</html>
