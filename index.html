@@ -59,17 +59,34 @@
             cursor: pointer;
             margin-top: 5px;
         }
+        .media-grid {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
         .voice-btn {
-            width: 100%;
-            padding: 13px;
+            flex: 1;
+            padding: 12px;
             background: #28a745;
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
-            margin-bottom: 12px;
+            text-align: center;
+        }
+        .video-btn {
+            flex: 1;
+            padding: 12px;
+            background: #e67e22;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
         }
         .feed-btn {
             display: block;
@@ -93,6 +110,15 @@
             font-size: 13px;
             display: none;
         }
+        #media-preview {
+            margin-bottom: 12px;
+            display: none;
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #a3f7a3;
+        }
     </style>
 </head>
 <body>
@@ -108,14 +134,25 @@
         <button class="tab-btn" onclick="openTab('capsule', this)">⏳ 3. ካፕሱል</button>
     </div>
 
-    <!-- ክፍል 1: የድምፅ ምስጢር እና ቪዲዮ -->
+    <!-- ክፍል 1: የድምፅ ምስጢር፣ ቪዲዮ እና ጽሁፍ -->
     <div id="mystery" class="section active">
         <h3>🎙️ የድምፅ ምስጢር እና ቪዲዮ</h3>
-        <p style="font-size: 13px; color: #ccc;">ድምፅ ወይም ቪዲዮ ለመቅዳት አረንጓዴውን ቁልፍ ይጫኑ፤ ወይም እንቆቅልሽዎን በጽሁፍ ይልቀቁ።</p>
+        <p style="font-size: 13px; color: #ccc;">ድምፅ ወይም ቪዲዮ ይቅረጹ፤ ወይም እንቆቅልሽዎን በጽሁፍ ይልቀቁ።</p>
         
-        <button class="voice-btn" onclick="openBotForMedia()">🎙️ ድምፅ ወይም 🎥 ቪዲዮ ቅዳ (በቦቱ)</button>
+        <div class="media-grid">
+            <label class="voice-btn">
+                🎙️ ድምፅ ቅዳ
+                <input type="file" id="audio-input" accept="audio/*" capture="microphone" style="display:none;" onchange="handleFileSelect(this, 'audio')">
+            </label>
+            <label class="video-btn">
+                🎥 ቪዲዮ ቅረጽ
+                <input type="file" id="video-input" accept="video/*" capture="camcorder" style="display:none;" onchange="handleFileSelect(this, 'video')">
+            </label>
+        </div>
+
+        <div id="media-preview"></div>
         
-        <textarea id="mystery-text" rows="3" placeholder="እንቆቅልሽዎን ወይም አዲስ ሀሳብዎን እዚህ ይጻፉ..."></textarea>
+        <textarea id="mystery-text" rows="3" placeholder="እንቆቅልሽዎን ወይም አዲስ ሀሳብዎን እዚህ ይጻፉ (አማራጭ)..."></textarea>
         <button class="action-btn" onclick="postDirectly('mystery')">ለሁሉም ወጣቶች ልቀቅ 🚀</button>
         <div id="status-mystery" class="status-box"></div>
     </div>
@@ -147,12 +184,14 @@
 
     <script>
         const BOT_TOKEN = "9121286572:AAGSHH0A4yIQiCqJNjgXGFaGrwZFhGJesGw"; 
-        const BOT_USERNAME = "wetatoch_medrek_bot";
         const CHANNEL_USERNAME = "wetatoch_medrek_feed"; 
 
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
+
+        let selectedFile = null;
+        let selectedMediaType = null;
 
         let userName = "ወጣት";
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
@@ -170,55 +209,56 @@
             btnElement.classList.add('active');
         }
 
-        function openBotForMedia() {
-            tg.openTelegramLink(`https://t.me{BOT_USERNAME}?start=record`);
-        }
-
         function openChannel() {
             tg.openTelegramLink(`https://t.me{CHANNEL_USERNAME}`);
         }
 
+        function handleFileSelect(input, type) {
+            if (input.files && input.files[0]) {
+                selectedFile = input.files[0];
+                selectedMediaType = type;
+                const preview = document.getElementById('media-preview');
+                preview.style.display = "block";
+                const label = type === 'audio' ? '🎙️ ድምፅ ተዘጋጅቷል' : '🎥 ቪዲዮ ተዘጋጅቷል';
+                preview.innerHTML = `${label}: <b>${selectedFile.name}</b> <span style="color:#ff7777; cursor:pointer; float:right;" onclick="clearMedia()">[ሰርዝ ✖]</span>`;
+            }
+        }
+
+        function clearMedia() {
+            selectedFile = null;
+            selectedMediaType = null;
+            document.getElementById('audio-input').value = '';
+            document.getElementById('video-input').value = '';
+            document.getElementById('media-preview').style.display = 'none';
+        }
+
         async function postDirectly(type) {
             let statusBox = document.getElementById(`status-${type}`);
-            let message = "";
-
-            if (type === 'mystery') {
-                const text = document.getElementById('mystery-text').value.trim();
-                if (!text) return alert("እባክዎ መጀመሪያ ጽሁፍ ያስገቡ!");
-                message = `🎙️ <b>አዲስ ምስጢር / እንቆቅልሽ</b>\n\n${text}`;
-            } else if (type === 'barter') {
-                const offer = document.getElementById('offer-skill').value.trim();
-                const want = document.getElementById('want-skill').value.trim();
-                if (!offer || !want) return alert("እባክዎ ሁለቱንም ክህሎቶች ይሙሉ!");
-                message = `🤝 <b>የክህሎት ልውውጥ</b>\n\n✅ <b>ማስተማር የምችለው፦</b> ${offer}\n📚 <b>መማር የምፈልገው፦</b> ${want}\n👤 <b>ላኪው፦</b> ${userName}`;
-            } else if (type === 'capsule') {
-                const msg = document.getElementById('capsule-msg').value.trim();
-                const date = document.getElementById('capsule-date').value;
-                if (!msg || !date) return alert("እባክዎ መልዕክቱን እና ቀኑን ይምረጡ!");
-                message = `⏳ <b>የጊዜ ካፕሱል ተቆልፏል!</b>\n\n📅 <b>የሚከፈትበት ቀን፦</b> ${date}\n👤 <b>ባለቤት፦</b> ${userName}\n\n<i>(መልዕክቱ በተጠቀሰው ቀን ይፋ ይሆናል)</i>`;
-            }
-
             statusBox.style.display = "block";
             statusBox.style.background = "#333";
             statusBox.style.color = "#fff";
-            statusBox.innerText = "⏳ እየተላከ ነው...";
+            statusBox.innerText = "⏳ እየተላከ ነው... እባክዎ ይጠብቁ";
 
             try {
-                const encodedText = encodeURIComponent(message);
-                const url = `https://telegram.org{BOT_TOKEN}/sendMessage?chat_id=@${CHANNEL_USERNAME}&text=${encodedText}&parse_mode=HTML`;
-                
-                await fetch(url, { mode: 'no-cors' });
+                // 1. ድምፅ ወይም ቪዲዮ ከተመረጠ
+                if (type === 'mystery' && selectedFile) {
+                    const captionText = document.getElementById('mystery-text').value.trim();
+                    const fullCaption = captionText 
+                        ? `🎙️ <b>አዲስ የድምፅ/ቪዲዮ ምስጢር</b>\n\n${captionText}` 
+                        : `🎙️ <b>አዲስ የድምፅ/ቪዲዮ ምስጢር</b>`;
 
-                statusBox.style.background = "#264d26";
-                statusBox.style.color = "#a3f7a3";
-                statusBox.innerText = "✅ በተሳካ ሁኔታ ወደ ቻናሉ ተልኳል!";
-                document.querySelectorAll('textarea, input[type="text"]').forEach(el => el.value = '');
-            } catch (error) {
-                statusBox.style.background = "#5c1e1e";
-                statusBox.style.color = "#ff9999";
-                statusBox.innerText = "❌ ስህተት፦ ኢንተርኔትዎን አረጋግጠው እንደገና ይሞክሩ።";
-            }
-        }
-    </script>
-</body>
-</html>
+                    const formData = new FormData();
+                    formData.append("chat_id", `@${CHANNEL_USERNAME}`);
+                    formData.append("caption", fullCaption);
+                    formData.append("parse_mode", "HTML");
+
+                    let endpoint = "";
+                    if (selectedMediaType === 'audio') {
+                        formData.append("audio", selectedFile);
+                        endpoint = "sendAudio";
+                    } else {
+                        formData.append("video", selectedFile);
+                        endpoint = "sendVideo";
+                    }
+
+                    await fetch(`https://telegram.org{BOT_TOKEN}/${endpoint}`, {
