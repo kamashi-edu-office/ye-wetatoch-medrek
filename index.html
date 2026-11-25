@@ -92,8 +92,6 @@
             margin-top: 12px;
             font-size: 13px;
             display: none;
-            background: #264d26;
-            color: #a3f7a3;
         }
     </style>
 </head>
@@ -145,21 +143,23 @@
         <div id="status-capsule" class="status-box"></div>
     </div>
 
-    <a id="channel-link" href="#" class="feed-btn" target="_blank">📺 የተጋሩትን ድምፆችን እና ቪዲዮዎችን ይመልከቱ</a>
+    <a id="channel-link" href="https://t.me" class="feed-btn" target="_blank">📺 የተጋሩትን ድምፆችን እና ቪዲዮዎችን ይመልከቱ</a>
 
     <script>
         // ==========================================
-        // እነዚህን 3 መረጃዎች በራስዎ ይቀይሩ፦
+        // 1. እዚህ ጋር የቦትዎን ቶከን (Token) ያስገቡ፦
         const BOT_TOKEN = "የቦትዎን_ቶከን_እዚህ_ያስገቡ"; 
-        const CHANNEL_USERNAME = "የቻናልዎ_ዩዘርኔም_ያለ_@"; // ለምሳሌ: kamashi_youth
-        const BOT_USERNAME = "የቦትዎ_ዩዘርኔም_ያለ_@";       // ለምሳሌ: kamashi_youth_bot
+        
+        // 2. እዚህ ጋር የቦትዎን ዩዘርኔም (ያለ @) ያስገቡ፦
+        const BOT_USERNAME = "የቦትዎን_ዩዘርኔም_ያለ_@_ያስገቡ";
+        
+        // የቻናልዎ ዩዘርኔም አስቀድሞ ተሞልቷል፦
+        const CHANNEL_USERNAME = "wetatoch_medrek_feed"; 
         // ==========================================
 
         const tg = window.Telegram.WebApp;
         tg.ready();
         tg.expand();
-
-        document.getElementById('channel-link').href = `https://t.me{CHANNEL_USERNAME}`;
 
         let userName = "ወጣት";
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
@@ -229,7 +229,7 @@
             } catch (error) {
                 statusBox.style.background = "#5c1e1e";
                 statusBox.style.color = "#ff9999";
-                statusBox.innerText = "❌ አልተላከም፦ ቦቱ በቻናሉ ውስጥ Admin መሆኑን እና ቶከኑ ትክክል መሆኑን ያረጋግጡ።";
+                statusBox.innerText = "❌ ስህተት፦ " + error.message;
             }
         }
     </script>
