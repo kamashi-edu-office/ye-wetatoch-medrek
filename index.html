@@ -134,7 +134,6 @@
         <button class="tab-btn" onclick="openTab('capsule', this)">⏳ 3. ካፕሱል</button>
     </div>
 
-    <!-- ክፍል 1: የድምፅ ምስጢር፣ ቪዲዮ እና ጽሁፍ -->
     <div id="mystery" class="section active">
         <h3>🎙️ የድምፅ ምስጢር እና ቪዲዮ</h3>
         <p style="font-size: 13px; color: #ccc;">ድምፅ ወይም ቪዲዮ ይቅረጹ፤ ወይም እንቆቅልሽዎን በጽሁፍ ይልቀቁ።</p>
@@ -157,7 +156,6 @@
         <div id="status-mystery" class="status-box"></div>
     </div>
 
-    <!-- ክፍል 2: የክህሎት ልውውጥ -->
     <div id="barter" class="section">
         <h3>🤝 የክህሎት ልውውጥ (Skill Barter)</h3>
         <p style="font-size: 13px; color: #ccc;">ያለ ገንዘብ እውቀት ይለዋወጡ። ጥያቄዎ በቀጥታ ለሁሉም ይፖሰታል።</p>
@@ -169,7 +167,6 @@
         <div id="status-barter" class="status-box"></div>
     </div>
 
-    <!-- ክፍል 3: የትውልድ የጊዜ ካፕሱል -->
     <div id="capsule" class="section">
         <h3>⏳ የወደፊት የጊዜ ካፕሱል</h3>
         <p style="font-size: 13px; color: #ccc;">ለወደፊት እራስዎ መልዕክት አስቀምጠው ይቆልፉ።</p>
@@ -240,7 +237,6 @@
             statusBox.innerText = "⏳ እየተላከ ነው... እባክዎ ይጠብቁ";
 
             try {
-                // 1. ድምፅ ወይም ቪዲዮ ከተመረጠ
                 if (type === 'mystery' && selectedFile) {
                     const captionText = document.getElementById('mystery-text').value.trim();
                     const fullCaption = captionText 
@@ -262,3 +258,8 @@
                     }
 
                     await fetch(`https://telegram.org{BOT_TOKEN}/${endpoint}`, {
+                        method: "POST",
+                        mode: "no-cors",
+                        body: formData
+                    });
+
