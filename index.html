@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>የወጣቶች የፈጠራ መድረክ</title>
-    <!-- ትክክለኛው የቴሌግራም Mini App ስክሪፕት -->
     <script src="https://telegram.org"></script>
     <style>
         body {
@@ -146,60 +145,92 @@
         <div id="status-capsule" class="status-box"></div>
     </div>
 
-    <!-- የቻናል ሊንክዎን እዚህ href ውስጥ ያስገቡ -->
-    <a href="https://t.me" class="feed-btn" target="_blank">📺 የተጋሩትን ድምፆችን እና ቪዲዮዎችን ይመልከቱ</a>
+    <a id="channel-link" href="#" class="feed-btn" target="_blank">📺 የተጋሩትን ድምፆችን እና ቪዲዮዎችን ይመልከቱ</a>
 
     <script>
-        // የቴሌግራም WebApp ን ማስጀመር
+        // ==========================================
+        // እነዚህን 3 መረጃዎች በራስዎ ይቀይሩ፦
+        const BOT_TOKEN = "የቦትዎን_ቶከን_እዚህ_ያስገቡ"; 
+        const CHANNEL_USERNAME = "የቻናልዎ_ዩዘርኔም_ያለ_@"; // ለምሳሌ: kamashi_youth
+        const BOT_USERNAME = "የቦትዎ_ዩዘርኔም_ያለ_@";       // ለምሳሌ: kamashi_youth_bot
+        // ==========================================
+
         const tg = window.Telegram.WebApp;
         tg.ready();
-        tg.expand(); // ገጹን በሙሉ ስክሪን እንዲከፍት ያደርገዋል
+        tg.expand();
 
-        // የተጠቃሚውን ስም ከቴሌግራም አንብቦ ሰላምታ ማሳየት
+        document.getElementById('channel-link').href = `https://t.me{CHANNEL_USERNAME}`;
+
+        let userName = "ወጣት";
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            const firstName = tg.initDataUnsafe.user.first_name;
-            document.getElementById('user-greeting').innerText = `እንኳን በደህና መጡ፣ ${firstName}!`;
+            userName = tg.initDataUnsafe.user.first_name;
+            if (tg.initDataUnsafe.user.username) {
+                userName += ` (@${tg.initDataUnsafe.user.username})`;
+            }
+            document.getElementById('user-greeting').innerText = `እንኳን በደህና መጡ፣ ${tg.initDataUnsafe.user.first_name}!`;
         }
 
-        // ትሮችን (Tabs) መቀያየሪያ
         function openTab(tabId, btnElement) {
             document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            
             document.getElementById(tabId).classList.add('active');
             btnElement.classList.add('active');
         }
 
-        // ድምፅ ወይም ቪዲዮ ለመቅዳት ወደ ቦቱ መመለስ
         function openBotForMedia() {
-            tg.sendData(JSON.stringify({ action: "record_media" }));
-            tg.close();
+            tg.openTelegramLink(`https://t.me{BOT_USERNAME}?start=record`);
         }
 
-        // መረጃውን ወደ ቦቱ መላኪያ
-        function postDirectly(type) {
-            let payload = { type: type };
+        async function postDirectly(type) {
+            let statusBox = document.getElementById(`status-${type}`);
+            let message = "";
 
             if (type === 'mystery') {
                 const text = document.getElementById('mystery-text').value.trim();
-                if (!text) return tg.showAlert("እባክዎ መጀመሪያ ጽሁፍ ያስገቡ!");
-                payload.text = text;
+                if (!text) return alert("እባክዎ መጀመሪያ ጽሁፍ ያስገቡ!");
+                message = `🎙️ <b>አዲስ ምስጢር / እንቆቅልሽ</b>\n\n${text}`;
             } else if (type === 'barter') {
                 const offer = document.getElementById('offer-skill').value.trim();
                 const want = document.getElementById('want-skill').value.trim();
-                if (!offer || !want) return tg.showAlert("እባክዎ ሁለቱንም ክህሎቶች ይሙሉ!");
-                payload.offer = offer;
-                payload.want = want;
+                if (!offer || !want) return alert("እባክዎ ሁለቱንም ክህሎቶች ይሙሉ!");
+                message = `🤝 <b>የክህሎት ልውውጥ</b>\n\n✅ <b>ማስተማር የምችለው፦</b> ${offer}\n📚 <b>መማር የምፈልገው፦</b> ${want}\n👤 <b>ላኪው፦</b> ${userName}`;
             } else if (type === 'capsule') {
                 const msg = document.getElementById('capsule-msg').value.trim();
                 const date = document.getElementById('capsule-date').value;
-                if (!msg || !date) return tg.showAlert("እባክዎ መልዕክቱን እና ቀኑን ይምረጡ!");
-                payload.msg = msg;
-                payload.date = date;
+                if (!msg || !date) return alert("እባክዎ መልዕክቱን እና ቀኑን ይምረጡ!");
+                message = `⏳ <b>የጊዜ ካፕሱል ተቆልፏል!</b>\n\n📅 <b>የሚከፈትበት ቀን፦</b> ${date}\n👤 <b>ባለቤት፦</b> ${userName}\n\n<i>(መልዕክቱ በተጠቀሰው ቀን ይፋ ይሆናል)</i>`;
             }
 
-            // መረጃውን ለቴሌግራም ቦት መላክ (ቦቱ web_app_data በሚለው ይቀበለዋል)
-            tg.sendData(JSON.stringify(payload));
+            statusBox.style.display = "block";
+            statusBox.style.background = "#333";
+            statusBox.style.color = "#fff";
+            statusBox.innerText = "⏳ እየተላከ ነው...";
+
+            try {
+                const response = await fetch(`https://telegram.org{BOT_TOKEN}/sendMessage`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        chat_id: `@${CHANNEL_USERNAME}`,
+                        text: message,
+                        parse_mode: "HTML"
+                    })
+                });
+
+                const result = await response.json();
+                if (result.ok) {
+                    statusBox.style.background = "#264d26";
+                    statusBox.style.color = "#a3f7a3";
+                    statusBox.innerText = "✅ በተሳካ ሁኔታ ወደ ቻናሉ ተልኳል!";
+                    document.querySelectorAll('textarea, input[type="text"]').forEach(el => el.value = '');
+                } else {
+                    throw new Error(result.description);
+                }
+            } catch (error) {
+                statusBox.style.background = "#5c1e1e";
+                statusBox.style.color = "#ff9999";
+                statusBox.innerText = "❌ አልተላከም፦ ቦቱ በቻናሉ ውስጥ Admin መሆኑን እና ቶከኑ ትክክል መሆኑን ያረጋግጡ።";
+            }
         }
     </script>
 </body>
