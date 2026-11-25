@@ -87,9 +87,7 @@
             box-sizing: border-box;
         }
         .status-box {
-            background: #1b3a26;
-            color: #75e096;
-            padding: 10px;
+            padding: 12px;
             border-radius: 8px;
             margin-top: 12px;
             font-size: 13px;
@@ -118,7 +116,7 @@
         <button class="voice-btn" onclick="openBotForMedia()">🎙️ ድምፅ ወይም 🎥 ቪዲዮ ቅዳ (በቦቱ)</button>
         
         <textarea id="mystery-text" rows="3" placeholder="እንቆቅልሽዎን ወይም አዲስ ሀሳብዎን እዚህ ይጻፉ..."></textarea>
-        <button class="action-btn" onclick="sendToServer('mystery')">ለሁሉም ወጣቶች ልቀቅ 🚀</button>
+        <button class="action-btn" onclick="postDirectly('mystery')">ለሁሉም ወጣቶች ልቀቅ 🚀</button>
         <div id="status-mystery" class="status-box"></div>
     </div>
 
@@ -130,18 +128,18 @@
         <input type="text" id="offer-skill" placeholder="ለምሳሌ፡ ፎቶ ኤዲቲንግ፣ እንግሊዝኛ...">
         <label style="font-size:13px;">መማር የምፈልገው ክህሎት፡</label>
         <input type="text" id="want-skill" placeholder="ለምሳሌ፡ ኮዲንግ፣ ግራፊክ ዲዛይን...">
-        <button class="action-btn" onclick="sendToServer('barter')">የክህሎት ጥያቄውን ልቀቅ 🤝</button>
+        <button class="action-btn" onclick="postDirectly('barter')">የክህሎት ጥያቄውን ልቀቅ 🤝</button>
         <div id="status-barter" class="status-box"></div>
     </div>
 
     <!-- ክፍል 3: የትውልድ የጊዜ ካፕሱል -->
     <div id="capsule" class="section">
         <h3>⏳ የወደፊት የጊዜ ካፕሱል</h3>
-        <p style="font-size: 13px; color: #ccc;">ለወደፊት እራስዎ መልዕክት አስቀምጠው በጎግል ሰርቨር ላይ ይቆልፉ።</p>
+        <p style="font-size: 13px; color: #ccc;">ለወደፊት እራስዎ መልዕክት አስቀምጠው ይቆልፉ።</p>
         <textarea id="capsule-msg" rows="3" placeholder="ለወደፊት እራስዎ የሚያስተላልፉት መልዕክት..."></textarea>
         <label style="font-size:13px;">መልዕክቱ የሚከፈትበት ቀን፡</label>
         <input type="date" id="capsule-date">
-        <button class="action-btn" onclick="sendToServer('capsule')">ካፕሱሉን ቆልፍ 🔒</button>
+        <button class="action-btn" onclick="postDirectly('capsule')">ካፕሱሉን ቆልፍ 🔒</button>
         <div id="status-capsule" class="status-box"></div>
     </div>
 
@@ -154,17 +152,16 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // የአንተ የ Google Apps Script ሰርቨር ሊንክ
-        const SCRIPT_URL = "https://google.com";
+        // ⚠️ እዚህ ጋር የቦትህን ትክክለኛ API Token አስገባ
+        const BOT_TOKEN = "9121286572:AAFCpCtHQxrOzeBhUWO0zGOXiil9HP_GG8c";
+        const CHANNEL_ID = "@wetatoch_medrek_feed";
 
         let userName = "ወጣት";
         let userUsername = "";
-        let userId = "000000";
 
         if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
             userName = tg.initDataUnsafe.user.first_name || "ወጣት";
-            userUsername = tg.initDataUnsafe.user.username || "";
-            userId = tg.initDataUnsafe.user.id;
+            userUsername = tg.initDataUnsafe.user.username ? `(@${tg.initDataUnsafe.user.username})` : "";
             document.getElementById('user-greeting').innerText = "ሰላም " + userName + "! የፈጠራ ጉዞህን ጀምር።";
         }
 
@@ -175,35 +172,31 @@
             btn.classList.add('active');
         }
 
-        // ድምፅና ቪዲዮ በቴሌግራም ቦት ለመቅዳት ሚኒ አፑን ይዘጋል
         function openBotForMedia() {
-            tg.showAlert("አሁን ሚኒ አፑ ሲዘጋ ከታች በቀኝ በኩል ያለውን የቴሌግራም ማይክሮፎን 🎙️ ወይም ካሜራ 🎥 ተጭነው ድምፅ/ቪዲዮ ይላኩ፤ ወዲያውኑ ይፖሰታል!", function() {
-                tg.close();
-            });
+            tg.close();
         }
 
-        // ቻናሉን በቀጥታ በቴሌግራም ውስጥ ለመክፈት
         function openFeed(e) {
             e.preventDefault();
             tg.openTelegramLink("https://t.me");
         }
 
-        // ጽሁፎችን በቀጥታ ወደ Google Apps Script ሰርቨር መላኪያ
-        function sendToServer(type) {
-            let finalMessage = "";
+        // በቀጥታ ወደ ቴሌግራም ቻናሉ (@wetatoch_medrek_feed) የሚፖስት ተግባር
+        async function postDirectly(type) {
+            let formattedPost = "";
             let statusBox = document.getElementById('status-' + type);
 
             if (type === 'mystery') {
                 const txt = document.getElementById('mystery-text').value.trim();
                 if (!txt) return alert("እባክዎ መጀመሪያ ጽሁፍ ያስገቡ!");
-                finalMessage = txt;
+                formattedPost = `💡 1. የወጣቶች ሀሳብ እና እንቆቅልሽ\n👤 ከ: ${userName} ${userUsername}\n\n"${txt}"`;
                 document.getElementById('mystery-text').value = '';
             } 
             else if (type === 'barter') {
                 const offer = document.getElementById('offer-skill').value.trim();
                 const want = document.getElementById('want-skill').value.trim();
                 if (!offer || !want) return alert("እባክዎ ሁለቱንም ሳጥኖች ይሙሉ!");
-                finalMessage = `#ክህሎት ✅ እሰጣለሁ: ${offer} | 🎯 እፈልጋለሁ: ${want}`;
+                formattedPost = `🤝 2. የክህሎት ልውውጥ (Skill Barter)\n👤 አቅራቢ: ${userName} ${userUsername}\n\n✅ እሰጣለሁ: ${offer}\n🎯 እፈልጋለሁ: ${want}\n\n💬 ለመገናኘት ከላይ ያለውን ስም ነክተው ያናግሩ!`;
                 document.getElementById('offer-skill').value = '';
                 document.getElementById('want-skill').value = '';
             } 
@@ -211,32 +204,40 @@
                 const msg = document.getElementById('capsule-msg').value.trim();
                 const dt = document.getElementById('capsule-date').value;
                 if (!msg || !dt) return alert("እባክዎ መልዕክት እና ቀን ይምረጡ!");
-                finalMessage = `#ካፕሱል [የሚከፈትበት ቀን: ${dt}] - ${msg}`;
+                formattedPost = `⏳ 3. የትውልድ የጊዜ ካፕሱል (Time Capsule)\n👤 ባለቤት: ${userName} ${userUsername}\n📅 የሚከፈትበት ቀን: ${dt}\n\n🔒 "${msg}"`;
                 document.getElementById('capsule-msg').value = '';
             }
 
             statusBox.style.display = "block";
-            statusBox.innerText = "⏳ በመላክ ላይ ነው...";
+            statusBox.style.background = "#2a2a2a";
+            statusBox.style.color = "#fff";
+            statusBox.innerText = "⏳ በመፖሰት ላይ ነው...";
 
-            // የቴሌግራም መልዕክት በሚመስል መልኩ ወደ ሰርቨሩ ይልካል
-            const payload = {
-                message: {
-                    chat: { id: userId },
-                    from: { first_name: userName, username: userUsername },
-                    text: finalMessage
+            try {
+                const response = await fetch(`https://telegram.org{BOT_TOKEN}/sendMessage`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        chat_id: CHANNEL_ID,
+                        text: formattedPost
+                    })
+                });
+                const result = await response.json();
+
+                if (result.ok) {
+                    statusBox.style.background = "#1b3a26";
+                    statusBox.style.color = "#75e096";
+                    statusBox.innerText = "✅ በተሳካ ሁኔታ ተፖስቷል! ከታች ያለውን ሰማያዊ ቁልፍ ነክተው ቻናሉ ላይ ይመልከቱት።";
+                } else {
+                    statusBox.style.background = "#4a1c1c";
+                    statusBox.style.color = "#ff8a8a";
+                    statusBox.innerText = "❌ አልተፖሰተም: " + result.description;
                 }
-            };
-
-            fetch(SCRIPT_URL, {
-                method: "POST",
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            }).then(() => {
-                statusBox.innerText = "✅ በተሳካ ሁኔታ ተልኳል! ከታች ያለውን ሰማያዊ ቁልፍ ነክተው ቻናሉ ላይ ይመልከቱት።";
-            }).catch(err => {
-                statusBox.innerText = "❌ ስህተት ተፈጥሯል፣ እባክዎ ኢንተርኔትዎን ያረጋግጡ።";
-            });
+            } catch (error) {
+                statusBox.style.background = "#4a1c1c";
+                statusBox.style.color = "#ff8a8a";
+                statusBox.innerText = "❌ የኢንተርኔት ግንኙነት ችግር ተፈጥሯል።";
+            }
         }
     </script>
 </body>
